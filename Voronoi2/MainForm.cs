@@ -36,11 +36,11 @@ namespace Voronoi2
 	public partial class MainForm : Form
 	{
 		Bitmap bitmap;
-		Bitmap background;
-		Graphics g;
+		Graphics Graphics;
 		Random seeder;
 		Voronoi voroObject;
-		static int siteCount = 20;
+
+        int canvasSize = 500;
 		
 		public MainForm()
 		{
@@ -49,94 +49,253 @@ namespace Voronoi2
 			//
 			InitializeComponent();
 			
-			seeder = new Random();
-			pb.AutoSize = true;
-			bitmap = new Bitmap (512,512);
+			MainPictureBox.AutoSize = true;
+
+            bitmap = new Bitmap (canvasSize, canvasSize);
 			
-			background = new Bitmap ( 512, 512 );
-			Graphics g2 = Graphics.FromImage ( background );
-			g2.Clear (Color.White);
-			g2 = null;
-			
-			g = Graphics.FromImage (bitmap);
-			g.SmoothingMode = SmoothingMode.HighQuality;
-			g.Clear (Color.White);
-			pb.Image = bitmap;
-			this.AutoSize = true;
+			Graphics = Graphics.FromImage (bitmap);
+			Graphics.SmoothingMode = SmoothingMode.HighQuality;
+			Graphics.Clear (Color.LightGray);
+
+            MainPictureBox.Image = bitmap;
+
+            this.AutoSize = true;
 			
 			voroObject = new Voronoi ( 0.1 );
+
 		}
-		
-		void spreadPoints()
-		{
-			g.Clear ( Color.White );
-			
-			List<PointF> sites = new List<PointF>();
-			int seed = seeder.Next();
-			Random rand = new Random ( seed );
-			
-			richTextBox1.Text += "\nSEED: " + seed;
-			
-			for ( int i = 0; i < siteCount; i++ )
-			{
-				sites.Add ( new PointF ( (float)(rand.NextDouble() * 512), (float)(rand.NextDouble() * 512) ) );
-			}
-			
-			// رسم المواقع
-			for (int i = 0; i < sites.Count; i++)
-			{
-				g.FillEllipse ( Brushes.Blue, sites[i].X-1.5f, sites[i].Y-1.5f, 3, 3 );
-			}
-			
-			List<GraphEdge> ge;
-			ge = MakeVoronoiGraph ( sites, bitmap.Width, bitmap.Height );
-			
-			// رسم أضلاع فورونوي
-			for ( int i = 0; i < ge.Count; i++ )
-			{
-				try
-				{
-					CSPoint p1 = new CSPoint( (int)ge[i].x1, (int)ge[i].y1 );
-					CSPoint p2 = new CSPoint( (int)ge[i].x2, (int)ge[i].y2 );
-					g.DrawLine (Pens.Black, p1.X, p1.Y, p2.X, p2.Y );
-				}catch{
-					string s = "\nP " + i + ": " + ge[i].x1 + ", " + ge[i].y1 + " || " + ge[i].x2 + ", " + ge[i].y2;
-					richTextBox1.Text += s;
-				}
-			}
-			pb.Image = bitmap;
-		}
-		
-		List<GraphEdge> MakeVoronoiGraph ( List<PointF> sites, int width, int height )
-		{
-			double[] xVal = new double[sites.Count];
-			double[] yVal = new double[sites.Count];
-			for ( int i = 0; i < sites.Count; i++ )
-			{
-				xVal[i] = sites[i].X;
-				yVal[i] = sites[i].Y;
-			}
-			return voroObject.generateVoronoi ( xVal, yVal, 0, width, 0, height );
-			
-		}
+
+        void RunVoronoi()
+        {
+            //This is the main 
+            Graphics.Clear(Color.White);
+
+            List<PointF> sites = new List<PointF>();
+            int NumDataPoints = (int)numericUpDown1.Value;
+
+            if (checkUseStdData.Checked == false)
+            {
+                sites = GenerateRandomSites(NumDataPoints);
+            }
+            else
+            {
+                sites = GenerateFixedSites();
+            }
+
+
+            Graphics = DrawAxis(bitmap.Width, bitmap.Height, Graphics);
+
+            Graphics = DrawSites(sites, bitmap.Width/2, bitmap.Height/2, Graphics);
+
+            List<GraphEdge> VoronoiEdges = MakeVoronoiGraph(sites, bitmap.Width, bitmap.Height);
+
+            Graphics = DrawEdges(VoronoiEdges, bitmap.Width / 2, bitmap.Height / 2, Graphics);
+
+            MainPictureBox.Image = bitmap;
+        }
+
+        List<GraphEdge> MakeVoronoiGraph(List<PointF> sites, int width, int height)
+        {
+            double[] xVal = new double[sites.Count];
+            double[] yVal = new double[sites.Count];
+            for (int i = 0; i < sites.Count; i++)
+            {
+                xVal[i] = sites[i].X;
+                yVal[i] = sites[i].Y;
+            }
+            //return voroObject.generateVoronoi(xVal, yVal, 0, width, 0, height);
+            return voroObject.generateVoronoi(xVal, yVal, -width/2, width/2, -height/2, height/2);
+
+        }
+
+        private List<PointF> GenerateRandomSites(int SiteCount)
+        {
+
+            List<PointF> sites = new List<PointF>();
+
+            seeder = new Random();
+            int seed = seeder.Next();
+            Random rand = new Random(seed);
+
+            if (checkUseStdData.Checked == false)
+            {
+                for (int i = 0; i < SiteCount; i++)
+                {
+                    sites.Add(new PointF(
+                                            (float)(rand.NextDouble() * canvasSize) - canvasSize/2,
+                                            (float)(rand.NextDouble() * canvasSize) - canvasSize/2
+                                        ) );
+                }
+            }
+
+            return sites;
+
+        }
+
+        private List<PointF> GenerateFixedSites()
+        {
+
+            List<PointF> sites = new List<PointF>();
+
+            float multiplier = 10;
+
+            /*
+            sites.Add(new PointF((float)  7.5 * multiplier, (float)  6.0 * multiplier) );
+            sites.Add(new PointF((float)  8.0 * multiplier, (float) 16.5 * multiplier) );
+            sites.Add(new PointF((float) 14.0 * multiplier, (float) 20.0 * multiplier) );
+            sites.Add(new PointF((float) 18.5 * multiplier, (float) 11.0 * multiplier) );
+            */
+
+            
+            sites.Add(new PointF((float)0 * multiplier, (float)0 * multiplier));
+            sites.Add(new PointF((float)5 * multiplier, (float)1 * multiplier));
+            sites.Add(new PointF((float)1 * multiplier, (float)-1* multiplier));
+            sites.Add(new PointF((float)-1 * multiplier, (float)1 * multiplier));
+            sites.Add(new PointF((float)-5 * multiplier, (float)-1 * multiplier));
+            
+            /*
+            sites.Add(new PointF((float)0 * multiplier, (float)0 * multiplier));
+            sites.Add(new PointF((float)1 * multiplier, (float)1 * multiplier));
+            sites.Add(new PointF((float)1 * multiplier, (float)2 * multiplier));
+            sites.Add(new PointF((float)2 * multiplier, (float)1 * multiplier));
+            sites.Add(new PointF((float)2 * multiplier, (float)2 * multiplier));
+            */
+
+            return sites;
+
+        }
+
+        Graphics DrawSites ( List<PointF> SiteList, int AxisX, int AxisY, Graphics g )
+        {
+
+            //Need to translate to the Axis on the Chart
+            
+            // Draw the sites on the canvas
+            for (int i = 0; i < SiteList.Count; i++)
+            {
+               
+                float PointSize = 4;
+
+                Brush PointColour = new SolidBrush(Color.BlueViolet);
+
+                //The X and Y need to be afdjusted by half of the size of the pixel
+                int x = AxisX + (int)( SiteList[i].X + 0.5 );
+                    x = x - (int)( PointSize / 2 );
+                int y = AxisY - (int)( SiteList[i].Y + 0.5 );
+                    y = y - (int)(PointSize / 2);
+
+                int w = (int)PointSize;
+                int h = (int)PointSize;
+                
+                g.FillEllipse( PointColour, x, y, w, h );
+
+                //Some Dubug for the Sites Locations
+                if (numericUpDown1.Value < 50)
+                {
+                    richTextBox1.Text += "Site: " + i + "\n      X: " + x + "      Y: " + y + "\n";
+                }
+
+            }
+            return g; 
+        }
+
+        Graphics DrawAxis (int CanvasX, int CanvasY, Graphics g)
+        {
+
+            //Draw Horizontal Axis
+            CSPoint p1 = new CSPoint(0, CanvasY / 2 );
+            CSPoint p2 = new CSPoint(CanvasX, CanvasY / 2);
+            
+            g.DrawLine(Pens.Yellow, p1, p2);
+
+            //Draw Horizontal Axis
+            p1 = new CSPoint(CanvasX / 2, 0);
+            p2 = new CSPoint(CanvasX / 2, CanvasY);
+
+            g.DrawLine(Pens.Red, p1, p2);
+
+            return g;
+        }
+
+        Graphics DrawEdges(List<GraphEdge> VoronoiEdges, int AxisX, int AxisY, Graphics g)
+        {
+          
+            // So effectively ge is a list of Site Boundaries Generated by MakeVoronoiGraph
+            // Plots should be modified using a 
+            for (int i = 0; i < VoronoiEdges.Count; i++)
+            {
+
+                int x1 = AxisX + (int)VoronoiEdges[i].x1;
+                int y1 = AxisY - (int)VoronoiEdges[i].y1;
+                int x2 = AxisX + (int)VoronoiEdges[i].x2;
+                int y2 = AxisY - (int)VoronoiEdges[i].y2;
+
+                string linedata = "Point " + i
+                                + ": S1:" + VoronoiEdges[i].site1 + ", S2:" + VoronoiEdges[i].site2 + "\n"
+                                + "      X1: " + x1 + ", Y1: " + y1 + "\n"
+                                + "      X2: " + x2 + ", Y2: " + y2 + "\n";
+
+                if (numericUpDown1.Value < 10)
+                {
+
+                    richTextBox1.Text += linedata;
+
+                }
+
+                try
+                {
+
+                    CSPoint p1 = new CSPoint( x1, y1 );
+                    CSPoint p2 = new CSPoint( x2, y2 );
+
+                    g.DrawLine(Pens.DarkGray, p1, p2);
+
+                }
+                catch
+                {
+
+                    richTextBox1.Text += linedata;
+
+                }
+            }
+
+            return g;
+        }
+
+       
 		
 		
 		void Button1Click(object sender, EventArgs e)
 		{
-			this.richTextBox1.Text += "\n******* NEW TEST *******";
-			spreadPoints();
+			this.richTextBox1.Text += "Run - Button Clicked\n";
+			RunVoronoi();
 			//background = Clone32BPPBitmap ( bitmap );
 		}
 		void NumericUpDown1ValueChanged(object sender, EventArgs e)
 		{
-			siteCount = (int)(numericUpDown1.Value);
-			spreadPoints();
+            this.richTextBox1.Text += "Run - Number Changed Clicked\n";
+            checkUseStdData.Checked = false;
+            RunVoronoi();
 			//background = Clone32BPPBitmap ( bitmap );
 		}
 		
 		void PbMouseMove(object sender, MouseEventArgs e)
 		{
-			label1.Text = e.X + ", " + e.Y;
+            int x =  e.X - bitmap.Width / 2 ;
+            int y = bitmap.Height / 2 - e.Y;
+
+            label1.Text =  x + ", " + y;
 		}
-	}
+
+        private void checkUseStdData_CheckStateChanged(object sender, EventArgs e)
+        {
+            this.richTextBox1.Text += "Run - Check Changed Clicked\n";
+            RunVoronoi();
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
 }

@@ -2,5 +2,6 @@ C:\Users\saab9\Documents\Development\Voronoi\Voronoi2\bin\Debug\Voronoi2.exe
 C:\Users\saab9\Documents\Development\Voronoi\Voronoi2\bin\Debug\Voronoi2.pdb
 C:\Users\saab9\Documents\Development\Voronoi\Voronoi2\obj\Debug\Voronoi2.exe
 C:\Users\saab9\Documents\Development\Voronoi\Voronoi2\obj\Debug\Voronoi2.pdb
-C:\Users\saab9\Documents\Development\Voronoi\Voronoi2\bin\Debug\Voronoi2.exe.CodeAnalysisLog.xml
-C:\Users\saab9\Documents\Development\Voronoi\Voronoi2\bin\Debug\Voronoi2.exe.lastcodeanalysissucceeded
+C:\Users\saab9\Documents\Development\Voronoi\Voronoi2\obj\Debug\Voronoi2.csprojResolveAssemblyReference.cache
+C:\Users\saab9\Documents\Development\Voronoi\Voronoi2\obj\Debug\Voronoi2.MainForm.resources
+C:\Users\saab9\Documents\Development\Voronoi\Voronoi2\obj\Debug\Voronoi2.csproj.GenerateResource.Cache
