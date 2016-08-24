@@ -133,4 +133,21 @@ namespace Voronoi2
 			return 0;
 		}
 	}
+
+    public class GraphEdgeSorter : IComparer<GraphEdge>
+    {
+        public int Compare(GraphEdge e1, GraphEdge e2)
+        {
+           
+            if (e1.site1 < e2.site1) return -1;
+            if (e1.site1 > e2.site2) return 1;
+            
+            if (e1.x1 == e2.x1 && e1.x1 == e2.y1) return 1;
+            if (e1.x1 == e2.x2 && e1.y1 == e2.y2) return 1;
+            if (e1.x2 == e2.x1 && e1.x2 == e2.y1) return 1;
+            if (e1.x2 == e2.x2 && e1.y2 == e2.y2) return 1;
+            /**/
+            return 0;
+        }
+    }
 }

@@ -91,7 +91,10 @@ namespace Voronoi2
 
             Graphics = DrawEdges(VoronoiEdges, bitmap.Width / 2, bitmap.Height / 2, Graphics);
 
+            GeneratePolygons(VoronoiEdges, sites.Count);
+
             MainPictureBox.Image = bitmap;
+
         }
 
         List<GraphEdge> MakeVoronoiGraph(List<PointF> sites, int width, int height)
@@ -215,6 +218,58 @@ namespace Voronoi2
             g.DrawLine(Pens.Red, p1, p2);
 
             return g;
+        }
+
+        void GeneratePolygons(List<GraphEdge> VoronoiEdges, int SiteCount )
+        {
+
+            List<GraphEdge> SiteData = new List<GraphEdge>();
+            
+            for (int i = 0; i < VoronoiEdges.Count; i++)
+            {
+                // Each Line comes from two sites
+                // Need get the duplicates out into one list
+                // To this end a new strecture is called and site 2 is set to 0
+
+                GraphEdge NewDataPoint = new GraphEdge();
+
+                NewDataPoint.site1 = VoronoiEdges[i].site1;
+                NewDataPoint.x1 = VoronoiEdges[i].x1;
+                NewDataPoint.y1 = VoronoiEdges[i].y1;
+                NewDataPoint.x2 = VoronoiEdges[i].x2;
+                NewDataPoint.y2 = VoronoiEdges[i].y2;
+                
+                SiteData.Add(NewDataPoint);
+
+                NewDataPoint = new GraphEdge();
+
+                NewDataPoint.site1 = VoronoiEdges[i].site2;
+                NewDataPoint.x1 = VoronoiEdges[i].x1;
+                NewDataPoint.y1 = VoronoiEdges[i].y1;
+                NewDataPoint.x2 = VoronoiEdges[i].x2;
+                NewDataPoint.y2 = VoronoiEdges[i].y2;
+
+                SiteData.Add(NewDataPoint);
+
+            }
+
+
+            Console.WriteLine("Before");
+            foreach (GraphEdge x in SiteData)
+
+            {
+                Console.WriteLine("B: " + x.site1 + " XY1: " + x.x1 + "," + x.y1 + " XY2: " + x.x2 + "," + x.y2);
+            }
+
+            SiteData.Sort( new GraphEdgeSorter() );
+
+            Console.WriteLine("After");
+            foreach (GraphEdge x in SiteData)
+
+            {
+                Console.WriteLine("A: " + x.site1 + " XY1: " + x.x1 + "," + x.y1 + " XY2: " + x.x2 + "," + x.y2);
+            }
+
         }
 
         Graphics DrawEdges(List<GraphEdge> VoronoiEdges, int AxisX, int AxisY, Graphics g)
